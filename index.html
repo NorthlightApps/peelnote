@@ -9,6 +9,8 @@
 <meta property="og:description" content="Бумажные стикеры на рабочем столе Mac, которые можно сорвать.">
 <meta property="og:image" content="assets/icon-256.png">
 <meta name="theme-color" content="#14110d">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="assets/icon-256.png">
 <link rel="apple-touch-icon" href="assets/icon-256.png">
 <style>
@@ -71,16 +73,20 @@
   @keyframes pop { from { opacity: 0; transform: rotate(var(--tilt)) scale(1.15); } }
   .paper { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 70%, #fff) 0%, var(--c) 35%, color-mix(in srgb, var(--c) 94%, #000) 100%);
     box-shadow: 0 1px 2px rgba(0,0,0,.18); }
-  .paper::before { /* lifted corners */ content: ""; position: absolute; left: 8px; right: 8px; bottom: 2px; height: 14px; z-index: -1;
-    box-shadow: 14px 10px 14px rgba(0,0,0,.45), -14px 10px 14px rgba(0,0,0,.45); border-radius: 50%; }
-  .paper::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, transparent 60%, rgba(0,0,0,.07)); }
-  .strip { height: 26px; background: color-mix(in srgb, var(--c) 88%, #000); opacity: .6; cursor: grab; position: relative; }
+  .paper { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 3px) calc(100% - 9px), calc(100% - 9px) calc(100% - 3px), calc(100% - 22px) 100%, 0 calc(100% - 1px)); }
+  .paper::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 40%, transparent 60%, rgba(0,0,0,.06)), linear-gradient(135deg, rgba(255,255,255,.14), transparent 45%); }
+  .curl { position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; pointer-events: none;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--c) 50%, #fff) 0%, color-mix(in srgb, var(--c) 88%, #000) 100%);
+    clip-path: polygon(100% 0, 0 100%, 12% 30%); border-radius: 0 0 6px 0; filter: drop-shadow(-2px -1px 2px rgba(0,0,0,.25)); }
+  .note { filter: drop-shadow(0 8px 10px rgba(0,0,0,.32)) drop-shadow(0 1px 1px rgba(0,0,0,.2)); }
+  .strip { height: 26px; background: linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,.04)); cursor: grab; position: relative; }
   .x { position: absolute; right: 6px; top: 3px; width: 20px; height: 20px; border: 0; background: none; color: rgba(40,32,10,.6); font-size: 13px; font-weight: 700;
     cursor: pointer; opacity: 0; transition: opacity .15s; z-index: 2; font-family: var(--font); }
   .note:hover .x, .note:focus-within .x { opacity: 1; }
-  .text { padding: 4px 14px 14px; height: calc(100% - 26px); outline: none; font-family: var(--round); font-size: 15px; line-height: 1.4; color: rgba(40,32,18,.9); overflow: hidden; white-space: pre-wrap; }
+  .text { padding: 4px 14px 14px; height: calc(100% - 26px); outline: none; font-family: "Caveat", var(--round); font-size: 23px; line-height: 1.15; color: rgba(31,41,87,.92); overflow: hidden; white-space: pre-wrap; }
   .piece { position: absolute; inset: 0; }
-  @media (max-width: 640px) { .desk { height: 520px; } .note { width: 180px; height: 170px; } .text { font-size: 14px; } }
+  @media (max-width: 640px) { .desk { height: 520px; } .note { width: 180px; height: 170px; } .text { font-size: 20px; } }
 
   section { padding: 88px 0 0; }
   h2 { font-size: clamp(30px, 4.6vw, 48px); letter-spacing: -.03em; line-height: 1.08; text-align: center; }
@@ -194,7 +200,7 @@
     n.style.left = Math.max(10, Math.min(W - nw - 10, fx * W)) + "px";
     n.style.top = Math.max(36, Math.min(H - nh - 40, fy * H)) + "px";
     n.style.zIndex = z++;
-    n.innerHTML = `<div class="paper"><div class="strip"><button class="x" aria-label="Сорвать">✕</button></div><div class="text" contenteditable="true" spellcheck="false"></div></div>`;
+    n.innerHTML = `<div class="paper"><div class="strip"><button class="x" aria-label="Сорвать">✕</button></div><div class="text" contenteditable="true" spellcheck="false"></div><div class="curl"></div></div>`;
     n.querySelector(".text").textContent = text;
     n.querySelector(".x").addEventListener("click", () => tear(n));
     drag(n);
@@ -240,7 +246,8 @@
     top.style.clipPath = `polygon(0 -40px, 100% -40px, ${pts.slice().reverse().join(",")})`;
     body.style.clipPath = `polygon(${pts.join(",")}, 100% calc(100% + 40px), 0 calc(100% + 40px))`;
     paper.replaceWith(top, body);
-    n.style.transition = "none"; n.style.zIndex = z++;
+    n.style.transition = "none"; n.style.zIndex = z++; n.style.filter = "none";
+    [top, body].forEach((p) => p.style.filter = "drop-shadow(0 6px 8px rgba(0,0,0,.3))");
     const dir = Math.random() < .5 ? 1 : -1;
     body.style.transformOrigin = `${dir > 0 ? 35 : 65}% ${cut}px`;
     const drop = desk.clientHeight - n.offsetTop + 60;
